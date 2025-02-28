@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaming Zone</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.6); }
+      50% { box-shadow: 0 0 20px rgba(99, 102, 241, 1); }
+      100% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.6); }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-r from-gray-900 via-gray-800 to-black text-white min-h-screen">
+  <header class="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-center shadow-md">
+    <h1 class="text-5xl font-extrabold text-white animate-pulse">Gaming Zone</h1>
+    <p class="text-gray-200 mt-2 text-lg">Choose your favorite game and start playing!</p>
+  </header>
+
+  <main class="container mx-auto p-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Tic-Tac-Toe Game Card -->
+      <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg p-4 text-center hover:scale-105 transition duration-500">
+        <img src="tic-tac-toe.jpg" alt="Tic-Tac-Toe" class="w-full aspect-[3/2] object-cover">
+        <h2 class="text-2xl font-bold text-blue-400 mt-4">Tic-Tac-Toe</h2>
+        <a href="tic-tac-toe.html" class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 hover:scale-110 transition duration-300">Play</a>
+
+      </div>
+      
+      <!-- Snake Game Card -->
+      <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg p-4 text-center hover:scale-105 transition duration-500">
+        <img src="snake.jpg" alt="Snake Game" class="w-full aspect-[3/2] object-cover">
+        <h2 class="text-2xl font-bold text-indigo-400 mt-4">Snake Game</h2>
+        <a href="snake-game.html" class="mt-4 inline-block bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600">Play</a>
+      </div>
+
+      <!-- Star Drop Hunt -->
+      <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg p-4 text-center hover:scale-105 transition duration-500">
+        <img src="stardrop.jpg" alt="Star Drop Hunt" class="w-full aspect-[3/2] object-cover">
+        <h2 class="text-2xl font-bold text-green-400 mt-4">Star Drop Hunt</h2>
+        <a href="stardrophunt.html" class="mt-4 inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Play</a>
+      </div>
+
+      <!-- under construction -->
+
+      <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg p-4 text-center hover:scale-105 transition duration-500">
+        <img src="under-construction.jpg" alt="Under Construction" class="w-full aspect-[3/2] object-cover">
+        <h2 class="text-2xl font-bold text-yellow-400 mt-4">Under Construction</h2>
+        <a href="#" class="mt-4 inline-block bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Coming Soon</a>
+      </div>  
+    </div>
+  </main>
+
+  <footer class="bg-gray-800 p-4 mt-8 text-center">
+    <p class="text-gray-400">This website is developed by <a href="https://github.com/mdimranhasanmahin/" class="text-indigo-400 hover:text-indigo-300">Md Imran Hasan Mahin</a></p>
+  </footer>
+</body>
+</html>

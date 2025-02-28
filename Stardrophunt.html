@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Drop Hunt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/03c0d59845.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            margin: 0; /* Ensure no extra space is added by body */
+        }
+
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: rgb(235, 235, 225);
+            border-radius: 50%;
+            animation: fall linear;
+        }
+
+        @keyframes fall {
+            from {
+                top: -50px;
+            }
+            to {
+                top: 100%;
+            }
+        }
+
+        .basket {
+            position: absolute;
+            bottom: 20px; /* Add more space between basket and footer */
+            width: 120px; /* 2x width */
+            height: 90px; /* 2x height */
+            background: url(wicker-basket\ \(1\).png) no-repeat center;
+            background-size: contain;
+        }
+
+        #game-container {
+            width: 100%;
+            height: calc(100vh - 20px); /* Leave 20px space for footer gap */
+            position: relative;
+            margin: 0 auto;
+            border-top: 2px solid white;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .basket {
+                width: 100px; /* Adjust size for smaller screens */
+                height: 75px;
+            }
+            .star {
+                width: 15px;
+                height: 15px;
+            }
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            display: none;
+        }
+
+        .game-over button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .game-over button:hover {
+            background-color: #7fa081;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-green-500 to-green-800 text-white relative">
+
+    <div class="absolute top-4 left-4">
+        <button id="restart-btn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Restart</button>
+    </div>
+
+    <div class="absolute top-4 right-4">
+        <p class="text-xl">Score: <span id="score">0</span></p>
+        <p class="text-xl">Life: <span id="lives">5</span></p>
+        <p class="text-xl">Best Score: <span id="best-score">0</span></p>
+    </div>
+
+    <div id="game-container" class="relative">
+        <div id="basket" class="basket"></div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="game-over">
+        <h2 class="text-3xl font-bold">Game Over!</h2>
+        <p class="text-xl mt-2">Your Final Score: <span id="final-score"></span></p>
+        <button id="restart-game">Restart Game</button>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById("game-container");
+        const basket = document.getElementById("basket");
+        const scoreElement = document.getElementById("score");
+        const bestScoreElement = document.getElementById("best-score");
+        const livesElement = document.getElementById("lives");
+        const restartButton = document.getElementById("restart-btn");
+        const gameOverScreen = document.getElementById("game-over-screen");
+        const finalScoreElement = document.getElementById("final-score");
+        const restartGameButton = document.getElementById("restart-game");
+
+        let score = 0;
+        let lives = 5;
+        let gameInterval;
+        let speedMultiplier = 1;
+        let initialSpeed = 4; // Ball initial drop speed
+
+        // Retrieve best score from localStorage
+        let bestScore = localStorage.getItem("bestScore") || 0;
+        bestScoreElement.textContent = bestScore;
+
+        // Basket movement for desktop and mobile
+        function moveBasket(event) {
+            let x;
+            if (event.type === "mousemove") {
+                const rect = gameContainer.getBoundingClientRect();
+                x = Math.max(0, Math.min(event.clientX - rect.left, rect.width - basket.offsetWidth));
+            } else if (event.type === "touchmove") {
+                const rect = gameContainer.getBoundingClientRect();
+                x = Math.max(0, Math.min(event.touches[0].clientX - rect.left, rect.width - basket.offsetWidth));
+            }
+            basket.style.left = `${x}px`;
+        }
+
+        gameContainer.addEventListener("mousemove", moveBasket);
+        gameContainer.addEventListener("touchmove", moveBasket);
+
+        // Generate a falling star
+        function createStar() {
+            const star = document.createElement("div");
+            star.classList.add("star");
+            star.style.left = `${Math.random() * (gameContainer.offsetWidth - 20)}px`;
+            star.style.animationDuration = `${(initialSpeed + Math.random() * 2) / speedMultiplier}s`;
+            gameContainer.appendChild(star);
+
+            // Handle collision detection and removal
+            const fallInterval = setInterval(() => {
+                const starRect = star.getBoundingClientRect();
+                const basketRect = basket.getBoundingClientRect();
+                const containerRect = gameContainer.getBoundingClientRect();
+
+                if (
+                    starRect.bottom >= basketRect.top &&
+                    starRect.left < basketRect.right &&
+                    starRect.right > basketRect.left
+                ) {
+                    score += 10;
+                    scoreElement.textContent = score;
+                    star.remove();
+                    clearInterval(fallInterval);
+
+                    // Increase speed after every 50 points
+                    if (score % 50 === 0) {
+                        speedMultiplier += 0.2;
+                    }
+                } else if (starRect.bottom >= containerRect.bottom) {
+                    star.remove();
+                    clearInterval(fallInterval);
+
+                    lives -= 1;
+                    livesElement.textContent = lives;
+
+                    if (lives === 0) {
+                        clearInterval(gameInterval);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            localStorage.setItem("bestScore", bestScore);
+                        }
+                        showGameOverScreen();
+                    }
+                }
+            }, 20);
+        }
+
+        // Start the game
+        function startGame() {
+            score = 0;
+            lives = 5;
+            speedMultiplier = 1;
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+
+            gameInterval = setInterval(() => {
+                createStar();
+            }, 1000);
+        }
+
+        // Show game over screen
+        function showGameOverScreen() {
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = "block";
+        }
+
+        // Restart the game
+        restartButton.addEventListener("click", () => {
+            clearInterval(gameInterval);
+            gameContainer.innerHTML = "";
+            gameContainer.appendChild(basket);
+            startGame();
+        });
+
+        restartGameButton.addEventListener("click", () => {
+            gameOverScreen.style.display = "none";
+            clearInterval(gameInterval);
+            gameContainer.innerHTML = "";
+            gameContainer.appendChild(basket);
+            startGame();
+        });
+
+        // Start the game initially
+        startGame();
+    </script>
+</body>
+</html>

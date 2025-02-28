@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    canvas {
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body class="m-0 flex flex-col justify-center items-center h-screen bg-gradient-to-br from-purple-700 to-blue-600 text-white font-sans">
+  <div id="game-over" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center bg-black bg-opacity-80 p-5 rounded-lg">
+    <h1 class="text-3xl font-bold mb-3">Game Over</h1>
+    <button onclick="restartGame()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-500">Restart</button>
+  </div>
+
+  <canvas id="gameCanvas" width="400" height="400" class="border border-white bg-gray-900"></canvas>
+
+  <div id="scoreboard" class="absolute top-5 right-5 p-3 bg-opacity-80 bg-gray-800 rounded-lg shadow-md border border-white">
+    <h3 class="text-lg font-bold">Score: <span id="current-score">0</span></h3>
+  </div>
+
+  <div class="controls grid grid-cols-3 gap-3 mt-5">
+    <div></div>
+    <button class="bg-white bg-opacity-20 text-white p-4 rounded-lg flex justify-center items-center hover:bg-opacity-40" data-arrow="↑" onclick="setDirection('UP')"></button>
+    <div></div>
+    <button class="bg-white bg-opacity-20 text-white p-4 rounded-lg flex justify-center items-center hover:bg-opacity-40" data-arrow="←" onclick="setDirection('LEFT')"></button>
+    <div></div>
+    <button class="bg-white bg-opacity-20 text-white p-4 rounded-lg flex justify-center items-center hover:bg-opacity-40" data-arrow="→" onclick="setDirection('RIGHT')"></button>
+    <div></div>
+    <button class="bg-white bg-opacity-20 text-white p-4 rounded-lg flex justify-center items-center hover:bg-opacity-40" data-arrow="↓" onclick="setDirection('DOWN')"></button>
+    <div></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const currentScoreEl = document.getElementById('current-score');
+
+    const box = 20;
+    let snake = [{ x: 10 * box, y: 10 * box }];
+    let direction = 'RIGHT';
+    let food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
+    let gameOver = false;
+    let speed = 200;
+    let score = 0;
+
+    document.addEventListener('keydown', changeDirection);
+
+    function setDirection(newDirection) {
+      if (newDirection === 'LEFT' && direction !== 'RIGHT') direction = 'LEFT';
+      else if (newDirection === 'UP' && direction !== 'DOWN') direction = 'UP';
+      else if (newDirection === 'RIGHT' && direction !== 'LEFT') direction = 'RIGHT';
+      else if (newDirection === 'DOWN' && direction !== 'UP') direction = 'DOWN';
+    }
+
+    function changeDirection(event) {
+      const key = event.keyCode;
+      if (key === 37) setDirection('LEFT');
+      else if (key === 38) setDirection('UP');
+      else if (key === 39) setDirection('RIGHT');
+      else if (key === 40) setDirection('DOWN');
+    }
+
+    function drawFood() {
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(food.x + box / 2, food.y + box / 2, box / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawSnake() {
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? 'limegreen' : 'lightgreen';
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        ctx.strokeStyle = 'darkgreen';
+        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+      }
+    }
+
+    function updateSnake() {
+      const head = { x: snake[0].x, y: snake[0].y };
+
+      if (direction === 'LEFT') head.x -= box;
+      if (direction === 'UP') head.y -= box;
+      if (direction === 'RIGHT') head.x += box;
+      if (direction === 'DOWN') head.y += box;
+
+      if (head.x === food.x && head.y === food.y) {
+        food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
+        speed = Math.max(50, speed - 5); // Increase speed gradually
+        score += 10;
+        currentScoreEl.textContent = score;
+        clearInterval(gameInterval);
+        gameInterval = setInterval(gameLoop, speed);
+      } else {
+        snake.pop();
+      }
+
+      snake.unshift(head);
+    }
+
+    function checkCollision() {
+      const head = snake[0];
+
+      if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+        gameOver = true;
+      }
+
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          gameOver = true;
+        }
+      }
+    }
+
+    function gameLoop() {
+      if (gameOver) {
+        document.getElementById('game-over').classList.remove('hidden');
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawFood();
+      drawSnake();
+      updateSnake();
+      checkCollision();
+    }
+
+    function restartGame() {
+      gameOver = false;
+      snake = [{ x: 10 * box, y: 10 * box }];
+      direction = 'RIGHT';
+      food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
+      speed = 200;
+      score = 0;
+      currentScoreEl.textContent = score;
+      document.getElementById('game-over').classList.add('hidden');
+      clearInterval(gameInterval);
+      gameInterval = setInterval(gameLoop, speed);
+    }
+
+    let gameInterval = setInterval(gameLoop, speed);
+  </script>
+</body>
+</html>

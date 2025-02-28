@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 5px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1e293b;
+      color: white;
+      cursor: pointer;
+      border: 3px solid #3b82f6;
+      transition: background 0.3s ease-in-out;
+    }
+    .cell:hover {
+      background: #475569;
+    }
+    .winner-text {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+  <div class="flex flex-col items-center">
+    <h1 class="text-4xl font-bold mb-4 text-blue-400">Tic-Tac-Toe</h1>
+  </div>
+  <div id="board" class="grid mt-4 p-3 bg-gray-700 rounded-lg shadow-lg"></div>
+  <p id="winner" class="mt-4 text-xl font-semibold"></p>
+  <button id="restart" class="mt-6 px-6 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 shadow-md">Restart</button>
+
+  <script>
+    let board = Array(9).fill(null);
+    let currentPlayer = "X";
+    let gameTimeout;
+
+    function renderBoard() {
+      const boardDiv = document.getElementById('board');
+      boardDiv.innerHTML = '';
+      board.forEach((cell, index) => {
+        const cellDiv = document.createElement('div');
+        cellDiv.className = 'cell';
+        cellDiv.textContent = cell;
+        cellDiv.onclick = () => makeMove(index);
+        boardDiv.appendChild(cellDiv);
+      });
+    }
+
+    function makeMove(index) {
+      if (!board[index]) {
+        board[index] = currentPlayer;
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        renderBoard();
+        checkWinner();
+      }
+    }
+
+    function checkWinner() {
+      const winningCombinations = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+      winningCombinations.forEach(combination => {
+        const [a, b, c] = combination;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          document.getElementById('winner').innerHTML = `🎉 <span class="winner-text">${board[a]} wins!</span>`;
+          document.querySelectorAll('.cell').forEach(cell => cell.onclick = null);
+          autoRestart();
+        }
+      });
+      if (!board.includes(null) && !document.getElementById('winner').textContent) {
+        document.getElementById('winner').innerHTML = `<span class="winner-text">It's a draw!</span>`;
+        autoRestart();
+      }
+    }
+
+    function autoRestart() {
+      clearTimeout(gameTimeout);
+      gameTimeout = setTimeout(restartGame, 10000);
+    }
+
+    function restartGame() {
+      board = Array(9).fill(null);
+      currentPlayer = "X";
+      document.getElementById('winner').textContent = '';
+      renderBoard();
+    }
+
+    document.getElementById('restart').onclick = () => {
+      clearTimeout(gameTimeout);
+      restartGame();
+    };
+
+    renderBoard();
+  </script>
+</body>
+</html>
